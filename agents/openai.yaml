@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fortran"
+  short_description: "Write modern Fortran with ifx"
+  default_prompt: "Use $fortran to create or improve modern Fortran code with Intel ifx."
