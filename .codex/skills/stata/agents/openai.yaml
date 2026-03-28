@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stata"
+  short_description: "Stata do-files, manuals, and local runs"
+  default_prompt: "Use $stata to work with the local Stata installation and its bundled manuals."

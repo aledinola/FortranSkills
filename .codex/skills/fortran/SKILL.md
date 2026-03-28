@@ -7,56 +7,33 @@ description: Create, edit, review, build, and debug modern Fortran code and proj
 
 Use this skill for Fortran work with Intel oneAPI `ifx` on Windows. Treat the Fortran-lang best-practices guide as the default style baseline unless the repository is clearly legacy or the user asks for compatibility with older conventions.
 
-Use <https://fortran-lang.org/> as the main documentation reference for general Fortran language guidance, modern practices, tutorials, and community conventions.
-Use <https://github.com/fortran-lang> as the main upstream source for Fortran-lang projects, examples, libraries, and related documentation repositories.
-
 ## Quick Start
 
 Follow this workflow:
 
 1. Identify the active source files, compiler entry point, and whether the code is modern or legacy Fortran.
 2. Preserve existing project structure when it is intentional, but steer new code toward modules, explicit interfaces, allocatables, and clear procedure boundaries.
-3. Read [references/best-practices.md](references/best-practices.md) before creating substantial new code, refactoring APIs, reviewing callback patterns, or making style/design choices.
+3. Read [references/best-practices.md](references/best-practices.md) before creating substantial new code, refactoring APIs, or reviewing style/design choices.
 4. Read [references/intel-ifx.md](references/intel-ifx.md) when you need exact compiler invocation patterns, local install paths, or official Intel documentation links.
 5. Read [references/makefile-win.md](references/makefile-win.md) before writing or refactoring a Windows makefile for this user.
 6. Compile or test with the verified `setvars.bat` + `ifx` pattern from [references/intel-ifx.md](references/intel-ifx.md) whenever execution is requested or needed for validation.
 
-## Important Conventions
+## Write Modern Fortran
 
-Treat these as technical defaults unless the existing codebase clearly requires something else:
+Default to these conventions:
 
-- Keep one module per source file, and make the module name match the filepath for easier navigation in larger projects.
-- Prefer library-prefixed module names when building reusable packages to reduce name clashes across dependencies.
+- Remember that Fortran is case-insensitive, so treat identifier capitalization as style rather than semantics.
+- Indent modern Fortran code with four spaces per nesting level, including nested loops, conditionals, and contained procedures.
+- Prefer `enddo` and `endif` instead of `end do` and `end if`.
 - Put reusable procedures in modules, not loose external procedures.
-- Keep the main program body thin and push implementation into reusable modules.
 - Start every program unit with `implicit none`.
 - Use `private` by default in modules and export only the intended public API.
 - Add `intent(in)`, `intent(out)`, or `intent(inout)` to dummy arguments.
-- Remember that Fortran arrays are column-major, so access patterns and loop ordering should respect that when performance matters.
 - Prefer `allocatable` over `pointer` unless pointer semantics are truly required.
 - Prefer assumed-shape dummy arrays and pass explicit interfaces through modules.
 - Use named kinds from `iso_fortran_env` instead of hard-coded kind numbers.
 - Use `error stop` for fatal failures in modern code paths.
 - Use `newunit=` plus `iostat=` and `iomsg=` for file I/O that can fail.
-- Keep module variables to constants where possible; if module state must be exposed, prefer `protected` over unrestricted public mutable state.
-
-For callbacks and callback context:
-
-- Prefer nested internal functions first, especially when you want callback state to stay local to the calling routine without introducing module-level mutable state.
-- Prefer private module variables second when they make the design materially simpler, but call out clearly whether the state is shared, reentrant, or made thread-local explicitly.
-- Shared private module variables are risky under OpenMP or any concurrent execution unless thread-local storage is handled deliberately, for example with `threadprivate` where appropriate.
-- When thread-safety, reentrancy, or parallel execution matter, prefer designs that keep state local or explicit in the call path.
-- Treat `type(c_ptr)` callback context as the preferred interoperable approach when designing C-style extensible callback APIs.
-- Avoid `transfer()`-based callback context except when maintaining older code that already depends on it.
-
-## Style Preferences
-
-Treat these as house-style defaults rather than semantic rules:
-
-- Remember that Fortran is case-insensitive, so treat identifier capitalization as style rather than semantics.
-- Indent modern Fortran code with four spaces per nesting level, including nested loops, conditionals, and contained procedures.
-- Prefer `enddo` and `endif` instead of `end do` and `end if`.
-- Add a short leading comment block describing each module's purpose, and brief procedure comments when intent is not obvious from the signature alone.
 
 When adding new code, prefer a skeleton like:
 
@@ -88,7 +65,7 @@ Match the codebase instead of forcing a full rewrite, but improve quality where 
 - Keep fixed-form or legacy constructs only when the file or build already depends on them.
 - Avoid mixing new global state or COMMON-style patterns into otherwise modern code.
 - If a codebase uses `ifort`-era flags, adapt them carefully for `ifx` rather than assuming full equivalence.
-- When modernizing, prefer small behavior-preserving steps: add `implicit none`, add `intent`, move procedures into modules, separate modules into one-file-per-module layouts where practical, and replace pointers with allocatables where semantics allow.
+- When modernizing, prefer small behavior-preserving steps: add `implicit none`, add `intent`, move procedures into modules, replace pointers with allocatables where semantics allow.
 - Whenever `mod_utilities` and/or `mod_numerical` are present in the project, inspect and prefer the routines already defined there before creating new helper routines.
 
 ## Write Windows Makefiles
