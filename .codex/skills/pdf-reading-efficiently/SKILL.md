@@ -100,6 +100,18 @@ py -c "from pypdf import PdfReader; r=PdfReader(r'input.pdf'); print(len(r.pages
 - Use explicit `C:\Program Files\...` paths when PATH resolution is ambiguous inside Codex.
 - For tables and complex layout, inspect `pdftotext` first only as a cheap probe, then move to `pdfplumber` or rendered pages if structure matters.
 
+## Equation-Heavy PDFs
+
+For economics papers and other PDFs with formal models, use text extraction to navigate, but use rendered pages to verify final equations.
+
+- Use `pdftotext -layout` first to find pages containing terms such as `Bellman`, `s.t.`, `max`, `constraint`, `Euler`, or key state variables.
+- Expect the extracted text layer to garble primes, Greek letters, summation limits, inequality symbols, and underlines/overlines.
+- Render the relevant page with `pdftoppm` or `pdftocairo` before writing final equations to Markdown.
+- Treat the rendered page as authoritative for exact math notation.
+- For Markdown artifacts intended for VS Code preview, use `$...$` for short inline math such as `$a$`, `$c$`, and `$\tau$`; avoid `\(...\)` because it may not render reliably. Put formal expressions in fenced `math` display blocks.
+- Save both the page-range text extraction and the rendered page image next to the Markdown output when the task is an extraction artifact.
+- In the final answer, say that equations were verified visually when text extraction was imperfect.
+
 ## Common Failure Modes
 
 - Empty or near-empty text output: suspect a scanned PDF or image-only pages.
@@ -130,6 +142,8 @@ Last tested on 2026-05-10:
 - `pdfplumber` extracted cleaner layout text for the table-like rows.
 - `PyMuPDF` extracted fast page text and preserved simple spacing.
 - `pdftoppm` rendered the page to PNG.
+- In a representative economics paper, `pdftotext -layout` quickly located a household Bellman equation, but rendered page inspection was needed to transcribe primes, Greek-letter primes, and inequality constraints reliably.
+- For Markdown equation extracts opened in VS Code, `$...$` inline math rendered better than `\(...\)` delimiters.
 
 ## Output Style
 
