@@ -25,7 +25,7 @@ For requests involving `gpuArray`, GPU `arrayfun`, Bellman or value function ite
 
 ## Reusable Templates
 
-The [useful_m_codes](useful_m_codes) folder contains user-provided MATLAB examples for common numerical routines, currently including helpers such as `interp1_scal`, `locate`, `golden`, and `goldenx`.
+The [useful_m_codes](useful_m_codes) folder contains user-provided MATLAB examples for common numerical routines, currently including helpers such as `interp1_scal`, `locate`, `golden`, `goldenx`, `loadArray`, and `loadBinary`.
 
 - Check `useful_m_codes` early when a project needs similar interpolation, search, optimization, or utility routines.
 - Treat these files primarily as templates, examples, and sources of implementation details.

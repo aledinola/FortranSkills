@@ -20,7 +20,8 @@ Follow this workflow:
 4. Read [references/best-practices.md](references/best-practices.md) before creating substantial new code, refactoring APIs, reviewing callback patterns, or making style/design choices.
 5. Read [references/intel-ifx.md](references/intel-ifx.md) when you need exact compiler invocation patterns, local install paths, or official Intel documentation links.
 6. Read [references/makefile-win.md](references/makefile-win.md) before writing or refactoring a Windows makefile for this user.
-7. Compile or test with the verified `setvars.bat` + `ifx` pattern from [references/intel-ifx.md](references/intel-ifx.md) whenever execution is requested or needed for validation.
+7. Read [references/fortran-matlab-io.md](references/fortran-matlab-io.md) when Fortran should write arrays or simulation/model outputs that MATLAB will later read.
+8. Compile or test with the verified `setvars.bat` + `ifx` pattern from [references/intel-ifx.md](references/intel-ifx.md) whenever execution is requested or needed for validation.
 
 ## Important Conventions
 
@@ -102,6 +103,16 @@ The [useful_codes](useful_codes) folder contains user-provided Fortran examples 
 - Avoid importing a whole `useful_codes` module unless that is clearly the best fit, because those files may carry dependencies the user does not want in every project.
 - When adapting code, preserve the active project's naming, kind parameters, module layout, and error-handling style.
 
+## Write Outputs For MATLAB
+
+When Fortran writes policy functions, simulated panels, moments, grids, value functions, or other multidimensional results for later MATLAB analysis, follow the Fortran-to-MATLAB workflow in [references/fortran-matlab-io.md](references/fortran-matlab-io.md):
+
+- Prefer unformatted stream binary files for large numeric arrays so full precision is preserved and no record markers are written.
+- Write a small plain-text metadata file containing dimensions, parameters, and enough type/order information for MATLAB to read the arrays programmatically.
+- Use `iso_fortran_env` kinds consistently: `real64` maps to MATLAB `float64`, `real32` maps to `single`, and default/common Fortran `integer` output usually maps to MATLAB `int32`.
+- In MATLAB, read binary arrays with the helper pattern in [../matlab/useful_m_codes/loadBinary.m](../matlab/useful_m_codes/loadBinary.m), reshaping with the dimensions from the metadata file.
+- Preserve Fortran's column-major dimension order when writing and reshaping arrays.
+
 ## Write Windows Makefiles
 
 When the user asks for a makefile on Windows, treat `makefile_win` plus `nmake` as the default convention.
@@ -147,6 +158,7 @@ Read only what you need:
 - Use [references/best-practices.md](references/best-practices.md) for style, architecture, array handling, and safer I/O.
 - Use [references/intel-ifx.md](references/intel-ifx.md) for machine-specific compiler execution and Intel documentation entry points.
 - Use [references/makefile-win.md](references/makefile-win.md) for the user's preferred `nmake /f makefile_win` structure on Windows.
+- Use [references/fortran-matlab-io.md](references/fortran-matlab-io.md) for writing Fortran outputs that MATLAB will read later.
 
 If the user asks for exact compiler behavior or option semantics, prefer the official Intel documentation linked in [references/intel-ifx.md](references/intel-ifx.md) over memory.
 
