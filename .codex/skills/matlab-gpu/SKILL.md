@@ -1,6 +1,6 @@
 ---
 name: matlab-gpu
-description: Use this skill for MATLAB code involving gpuArray, arrayfun on GPU, vectorization, value function iteration on GPU, and performance-sensitive numerical code.
+description: Use only for MATLAB code involving GPU-specific constructs or GPU execution, such as gpuArray, arrayfun on GPU, GPU vectorization, GPU memory use, or value function iteration intended to run on the GPU. For ordinary CPU MATLAB .m editing, use the matlab skill instead.
 ---
 
 # MATLAB GPU Skill
@@ -15,10 +15,13 @@ Use this skill when the user asks for MATLAB code or advice involving:
 - memory-efficient GPU implementation
 - performance tuning for MATLAB numerical code
 
+Do not use this skill merely because the files are MATLAB files. If the code is CPU-only and does not involve GPU execution, use the general `matlab` skill.
+
 ## Core principles
 
 - MATLAB is column-major. On CPU, if explicit loops are necessary, the first dimension should usually vary fastest in the innermost loop.
 - On GPU, this matters less than on CPU, but avoid advice that assumes C-style row-major traversal.
+- Prefer ordinary function signatures, `nargin` defaults, or simple option structs over MATLAB `arguments` blocks unless the user explicitly requests an `arguments` block or the existing file already follows that style.
 
 ### 1. Treat `gpuArray.arrayfun` as elementwise
 `gpuArray.arrayfun` computes one scalar output element from corresponding scalar input elements.

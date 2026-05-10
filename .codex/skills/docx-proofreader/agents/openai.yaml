@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "DOCX Proofreader"
+  short_description: "Proofread Word documents with word-limit and citation checks."
+  default_prompt: "Use $docx-proofreader to extract, proofread, count sections, check references, and safely edit Word .docx files."

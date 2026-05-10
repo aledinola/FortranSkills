@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MATLAB"
+  short_description: "Write and optimize MATLAB R2026a code"
+  default_prompt: "Use $matlab to write, review, optimize, or run MATLAB code with matlab -batch."

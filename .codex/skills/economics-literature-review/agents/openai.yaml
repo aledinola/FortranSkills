@@ -1,0 +1,4 @@
+interface:
+  display_name: "Economics Literature Review"
+  short_description: "Search and synthesize economics papers"
+  default_prompt: "Find, summarize, and synthesize economics papers on a topic using reputable databases first."

@@ -1,141 +1,120 @@
-# Fortran Best Practices
+## Fortran-lang style baseline
 
-Use this reference when writing new Fortran or reviewing whether code is modern, maintainable, and aligned with the Fortran-lang best-practices guide at [fortran-lang.org/learn/best_practices](https://fortran-lang.org/learn/best_practices/).
+Use these practices as the default baseline for new modern Fortran code unless the repository is clearly legacy or the user requests compatibility constraints.
 
-Treat these rules as defaults unless the repository is intentionally legacy.
+Use <https://fortran-lang.org/> as the primary documentation source for general language guidance and modern Fortran best practices.
+Use <https://github.com/fortran-lang> as the primary upstream source for Fortran-lang codebases, examples, libraries, and related documentation repositories.
 
-## Core Style
+### Program structure
 
-- Remember that Fortran is case-insensitive; capitalization affects readability, not identifier identity.
-- Indent code with four spaces per nesting level rather than two.
-- Prefer `enddo` and `endif` over `end do` and `end if` for this user's house style.
-- Start every module, program, subroutine, and function with `implicit none`.
-- Prefer lowercase keywords and identifiers for new code unless the project clearly uses a different house style.
-- Keep interfaces explicit by placing procedures in modules.
-- Use short, descriptive names and make units or meanings obvious in argument names when possible.
-- Export a narrow public API from modules with `private` by default and explicit `public` declarations.
+- Prefer modules over loose external procedures.
+- Keep one source file per module, and match the module name to the filepath.
+- Prefix module names with the library or project name when building reusable packages.
+- Keep each module focused on a clear responsibility.
+- Use `private` by default and export only the intended public API.
+- Group related procedures with shared derived types and constants.
+- Prefer internal procedures only when tight lexical scoping is genuinely helpful.
+- Start modules with a short comment block describing their purpose and contents.
+- Keep main programs thin and delegate implementation to modules.
 
-## Program Structure
+### Typing and interfaces
 
-- Prefer modules plus small procedures over monolithic programs.
-- Prefer one conceptual responsibility per module.
-- Keep computation separate from command-line parsing, file I/O, and reporting when practical.
-- Use `contains` to keep helper procedures attached to the owning module or program when that improves clarity.
-- When a project already provides shared helper modules such as `mod_utilities` or `mod_numerical`, prefer reusing and extending those routines instead of creating near-duplicate helpers elsewhere.
+- Start every program unit with `implicit none`.
+- Import kinds from `iso_fortran_env`, for example `real64` or `int32`.
+- Prefer explicit interfaces via module procedures instead of implicit external interfaces.
+- Add `intent(in)`, `intent(out)`, or `intent(inout)` to every dummy argument.
+- Prefer assumed-shape arrays in procedures that live in modules.
+- Use `optional` and `present()` only when the call-site flexibility is worth the added branching.
 
-## Types And Numeric Kinds
+### Memory and data
 
-- Import kinds from `iso_fortran_env`, for example `real64`, `int32`, or `error_unit`.
-- Create a local alias such as `dp => real64` when it improves readability.
-- Avoid hard-coded kind literals like `real(8)` unless the codebase is already committed to that convention.
+- Remember that Fortran arrays are column-major. Keep memory layout and loop ordering consistent with that when performance matters.
+- Prefer `allocatable` over `pointer` unless aliasing or deferred association is required.
+- Prefer whole-array operations and intrinsic procedures when they preserve clarity.
+- Use derived types to group related state instead of passing many parallel arrays.
+- Keep numerical kinds centralized rather than scattering literal kind suffixes.
+- Avoid hidden global state where possible.
+- Limit module variables to constants, parameters, or carefully controlled protected state whenever possible.
 
-Example:
+### Callback state and type-casting patterns
 
-```fortran
-use iso_fortran_env, only : dp => real64
-real(dp) :: x
-```
+Use these guidelines when designing callbacks that need extra state beyond the callback's formal arguments.
 
-## Procedures And Arguments
+Preferred order for this project:
 
-- Add `intent(in)`, `intent(out)`, or `intent(inout)` to dummy arguments.
-- Prefer pure/elemental procedures when semantics allow, especially for array-friendly logic.
-- Prefer `result(name)` in functions when it improves readability or avoids ambiguity.
-- Avoid hidden side effects in procedures that appear computational.
+1. Nested internal functions
+2. Private module variables
+3. Explicit context objects or work arrays when the interface already supports them
+4. `type(c_ptr)` for interoperable C-style callback APIs
 
-## Arrays
+Nested internal functions:
 
-- Prefer whole-array syntax, intrinsic functions, and array operations when they are clear.
-- Prefer assumed-shape dummy arrays such as `a(:)` or `a(:, :)` in module procedures.
-- Preserve contiguous memory access patterns when performance matters; Fortran is column-major.
-- Be careful when translating row-major algorithms from C, Python, or MATLAB-style mental models.
+- Prefer these by default for this project.
+- Keep state close to the call site.
+- Avoid semi-global module variables.
+- Usually give a clearer ownership story than private module state.
 
-## Allocation And Ownership
+Private module variables:
 
-- Prefer `allocatable` to `pointer` for owned storage.
-- Allocate as late as practical and let scope-driven deallocation work for you.
-- Use `allocated(x)` before deallocating or reallocating when control flow is not obvious.
-- Reserve pointers for aliasing, optional association graphs, or interop cases that truly need pointer semantics.
+- Use them when they materially simplify the design and the lifetime and concurrency model are well understood.
+- Shared module state is not thread-safe by default.
+- Reentrancy requires separate state per active callback path.
+- Concurrent evaluations, including OpenMP regions, need deliberate handling of thread-local state.
+- If thread-local module state is truly the intended design, mechanisms such as `threadprivate` can be appropriate where supported, but this should be an explicit choice rather than an assumption.
 
-## File I/O
+Explicit context objects or work arrays:
 
-- Use `open(newunit=unit, ...)` instead of hard-coded unit numbers.
-- Capture failures with `iostat=` and `iomsg=`.
-- Close units explicitly when the lifetime is not trivially scoped.
-- Keep parsing logic isolated from numerical kernels.
+- Prefer these when the callback interface already accepts explicit state.
+- Prefer a typed context structure over an unlabelled work array when you control the interface.
+- These patterns are often a better fit when thread-safety and reentrancy matter.
 
-Example:
+`type(c_ptr)` callback context:
 
-```fortran
-integer :: unit, stat
-character(len=:), allocatable :: msg
+- Use this as the preferred interoperable equivalent of C's `void *` for extensible callback APIs.
+- Prefer it over `transfer()` for new interoperable designs.
 
-open(newunit=unit, file=path, status="old", action="read", iostat=stat, iomsg=msg)
-if (stat /= 0) error stop msg
-```
+Avoid `transfer()` for new code unless you are maintaining an older design that already depends on it.
 
-## Error Handling
+Thread-safety rule of thumb:
 
-- Use `error stop` for fatal unrecoverable errors in modern code.
-- Return status codes only when the surrounding design genuinely needs recoverable flow.
-- Include enough context in error messages for debugging input and dimension mismatches.
+- If callbacks may be evaluated concurrently, do not assume module variables are safe by default.
+- Prefer nested internal procedures, explicit typed context arguments, or `type(c_ptr)`-based context passing unless thread-local module state is an explicit and well-supported part of the design.
 
-## Callbacks
+### Control flow and errors
 
-- Model callbacks with an `abstract interface` that declares the expected signature.
-- Accept callback arguments with `procedure(callback_interface)` dummy arguments so the compiler can check them.
-- Export the abstract interface when downstream code needs procedure pointers or wrapper procedures with the same signature.
-- Prefer module procedures or internal procedures as callback implementations when they naturally capture context.
-- Avoid untyped or loosely specified callback patterns that give up compile-time checking.
+- Prefer simple loops and clear procedure boundaries over deeply nested control flow.
+- Use `select case` when dispatching over discrete states.
+- Use `error stop` for fatal failures in modern code paths.
+- Propagate recoverable failures through status returns or explicit error handling paths.
 
-Example:
+### I/O
 
-```fortran
-module integrals_mod
-  use iso_fortran_env, only : dp => real64
-  implicit none
-  private
+- Use `newunit=` when opening files.
+- Capture both `iostat=` and `iomsg=` for operations that can fail.
+- Prefer explicit formats when output stability matters.
+- Keep parsing logic separate from numerical kernels.
 
-  public :: integrable_function, simpson
+### Numerical code
 
-  abstract interface
-    function integrable_function(x) result(y)
-      import :: dp
-      real(dp), intent(in) :: x
-      real(dp) :: y
-    end function integrable_function
-  end interface
+- Make side effects obvious.
+- Avoid silent shape or unit assumptions.
+- Name tolerances and constants rather than embedding magic numbers.
+- Validate array sizes and preconditions near the API boundary.
 
-contains
+### Modernization guidance
 
-  function simpson(f, a, b) result(s)
-    procedure(integrable_function) :: f
-    real(dp), intent(in) :: a, b
-    real(dp) :: s
+When improving existing code, prefer small behavior-preserving steps:
 
-    s = (b - a) / 6._dp * (f(a) + 4._dp * f((a + b) / 2._dp) + f(b))
-  end function simpson
+1. Add `implicit none`.
+2. Add `intent` declarations.
+3. Move procedures into modules to provide explicit interfaces.
+4. Split multi-module source files into one-file-per-module layouts when safe and useful.
+5. Replace `common` or scattered globals with module-owned state only when safe.
+6. Replace pointer-based storage with allocatables when aliasing is not required.
 
-end module integrals_mod
-```
+### Style notes
 
-## Interoperability And Legacy Code
-
-- Use `iso_c_binding` for C interoperability instead of compiler-specific extensions.
-- Contain legacy assumptions at boundaries instead of spreading them into new modules.
-- When modernizing older code, improve interfaces and safety incrementally before larger algorithmic rewrites.
-
-## Review Checklist
-
-Use this quick checklist before finishing a Fortran change:
-
-1. Does every program unit have `implicit none`?
-2. Did the change avoid relying on capitalization differences, since Fortran is case-insensitive?
-3. Are procedures placed in modules where possible?
-4. Do dummy arguments have `intent`?
-5. Are kinds imported from `iso_fortran_env`?
-6. Are allocatables used instead of pointers for owned arrays?
-7. Does file I/O use `newunit=`, `iostat=`, and `iomsg=` where failure is possible?
-8. Are callbacks expressed with abstract interfaces and `procedure(...)` arguments when callbacks are needed?
-9. If `mod_utilities` or `mod_numerical` exist, did the change reuse those routines before adding new helpers?
-10. Did the change preserve column-major array semantics and numerical intent?
+- Treat capitalization as style, not semantics. Fortran identifiers are case-insensitive.
+- Indent by four spaces per nesting level.
+- Prefer `enddo` and `endif` when matching an established modern-house style that already uses them.
+- Keep line length practical for the toolchain and reviewers, breaking long statements cleanly with continuation.

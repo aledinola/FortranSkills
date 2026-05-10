@@ -1,0 +1,4 @@
+interface:
+  display_name: "Economics Referee Report"
+  short_description: "Draft economics referee reports from paper PDFs"
+  default_prompt: "Use $economics-referee-report to read this paper PDF and draft a referee report with overview, major comments, and minor comments."

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "MATLAB GPU"
+  short_description: "Tune MATLAB gpuArray code"
+  default_prompt: "Use $matlab-gpu for MATLAB gpuArray, GPU arrayfun, and GPU performance work."
