@@ -1,4 +1,4 @@
-﻿---
+---
 name: docx-proofreader
 description: Proofread, analyze, and safely modify Microsoft Word .docx documents, especially academic reflective writing, application forms, assignments, and templates with section word or character limits. Use when Codex needs to extract Word document text, read surrounding instruction files for context, count words by section, check author-date references against in-text citations, verify that cited references exist, produce a proofread copy, or apply paragraph-level edits while preserving the original document.
 ---

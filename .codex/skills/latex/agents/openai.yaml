@@ -1,0 +1,4 @@
+interface:
+  display_name: "LaTeX"
+  short_description: "Edit and compile LaTeX documents reliably."
+  default_prompt: "Use $latex to create, edit, or fix LaTeX documents, including pdflatex builds and Scientific WorkPlace compatibility issues."

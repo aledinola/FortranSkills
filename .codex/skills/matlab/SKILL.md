@@ -1,4 +1,4 @@
-﻿---
+---
 name: matlab
 description: Use for all MATLAB .m editing, review, debugging, refactoring, and CPU performance work. This is the default MATLAB skill for scripts, functions, numerical workflows, interpolation, search, optimization, and value function iteration unless the user specifically needs GPU constructs such as gpuArray or arrayfun on GPU; in that case also use matlab-gpu.
 ---
@@ -8,7 +8,30 @@ description: Use for all MATLAB .m editing, review, debugging, refactoring, and 
 ## Purpose
 Write performance-oriented MATLAB code with modern array semantics. This is the default skill for ordinary CPU MATLAB work.
 
+Use `matlab` from `PATH` by default unless the user explicitly asks for another installed version. Do not hard-code a MATLAB release when the task only requires the default environment. If the user explicitly asks for a specific installed release, discover it first and call that release by full path.
+
 For requests involving `gpuArray`, GPU `arrayfun`, Bellman or value function iteration on GPU, or GPU-specific performance tuning, also use the `matlab-gpu` skill. Do not use `matlab-gpu` as a substitute for this skill when the project is ordinary CPU MATLAB code.
+
+## Running MATLAB from Codex
+- Default to PowerShell with `matlab -batch "<command>"` from the relevant project folder.
+- Do not spend time rediscovering MATLAB unless `matlab -batch` fails. Use the MATLAB executable on `PATH` as the default environment.
+- For a quick availability check, run `matlab -batch "disp(1)"`.
+- For scripts, prefer `matlab -batch "cd('<project folder>'); script_or_function"` rather than launching the desktop or changing directories with separate shell steps.
+- On Windows, prefer forward slashes inside MATLAB paths when composing `-batch` commands, for example `cd('C:/path/project')`, to reduce quoting and escaping problems.
+- If a script depends on helpers in subfolders, use `addpath(genpath(pwd))` after `cd(...)`, for example `matlab -batch "cd('C:/path/project'); addpath(genpath(pwd)); run_all_checks"`.
+- Call MATLAB scripts/functions by base name without `.m` in ordinary command form. Use `run_all_checks`, not `run_all_checks.m`; use `run('run_all_checks.m')` only when explicitly using MATLAB's `run` function.
+- For multiple checks, create or run one driver script and call MATLAB once, rather than starting MATLAB repeatedly with separate `-batch` commands.
+- When inline `matlab -batch "<command>"` becomes awkward, create or run a small local driver script that adds needed paths and calls the target script/function. Do not overwrite an existing meaningful `driver.m` without checking its contents.
+- Set a realistic command timeout for the expected workload; short smoke tests can use about 30 seconds, while real estimation/test runs may need minutes or a deliberate cap.
+- If a MATLAB command fails because of sandboxing or permissions, rerun the same command with escalated permissions instead of trying unrelated launch methods.
+- If `matlab -batch` fails inside the Codex sandbox with startup errors such as `System Error: File system inconsistency` or MathWorks service communication errors, do not infer that MATLAB is missing or the license is invalid. Treat sandbox-only startup failures as execution-context issues first, not MATLAB-code issues.
+- Use a full MATLAB path only when the user explicitly asks for a specific installed release or PATH-based launch fails for a real reason.
+
+## Skill Stability
+- Treat this MATLAB execution protocol as stable. Do not opportunistically edit this skill during ordinary MATLAB work.
+- Revisit these instructions only if the user explicitly asks, MATLAB's PATH/default release changes, Codex sandbox behavior changes, or a MATLAB run fails for a reason not covered here.
+- If the protocol still works, follow it instead of re-checking or expanding the skill. A quick `matlab -batch "disp(1)"` smoke test is enough when availability must be confirmed.
+- In normal project work, spend time on the user's MATLAB code and tests, not on maintaining this skill.
 
 ## Core Rules
 - Use this skill whenever editing or reasoning about `.m` files, even if the task is small. Check it before choosing a narrower MATLAB-related skill.
@@ -42,17 +65,10 @@ The [useful_m_codes](useful_m_codes) folder contains user-provided MATLAB exampl
 - Precompute loop-invariant objects such as utility terms, feasible-choice masks, and static transition components outside VFI loops when they do not depend on the current iterate.
 - Keep the whole Bellman or simulation pipeline on the GPU when feasible; prefer one large vectorized expression over many small GPU operations.
 - Keep loops on the GPU only when the fully vectorized formulation would create excessive temporary arrays or exceed device memory, and state that tradeoff explicitly.
-- Use `arrayfun` on GPU only for element-wise custom logic that cannot be expressed efficiently with built-ins; for detailed `arrayfun` constraints, follow the `matlab-gpu` skill.
+- Use `arrayfun` with `gpuArray` inputs only for element-wise custom logic that cannot be expressed efficiently with built-ins; for detailed GPU `arrayfun` constraints, follow the `matlab-gpu` skill.
 - Pay attention to array ordering and memory efficiency on the GPU; favor layouts and reshape patterns that avoid unnecessary temporaries and preserve contiguous access where possible.
 - Keep full pipelines on GPU where possible; `gather` only at output boundaries.
 - Prefer built-in GPU-enabled MATLAB functions before custom kernels.
-
-## Execution Note For This Machine
-- MATLAB R2026a is installed on this machine and `matlab.exe` is on PATH, so invoke MATLAB as `matlab -batch "main"` to run `main.m` from the current working directory.
-- Use `matlab -batch "<command>"` for validation and scripts unless the user requests another launch mode.
-- If `matlab -batch` fails inside the Codex sandbox with startup errors such as `System Error: File system inconsistency` or MathWorks service communication errors, do not infer that MATLAB is missing or the license is invalid.
-- In that case, rerun the same MATLAB command outside the sandbox before concluding there is a MATLAB or licensing problem.
-- Treat sandbox-only startup failures as execution-context issues first, not MATLAB-code issues.
 
 ## Output Style
 - Return runnable MATLAB code.
@@ -62,4 +78,3 @@ The [useful_m_codes](useful_m_codes) folder contains user-provided MATLAB exampl
 
 ## Low-priority style note
 - Do not hard-code input arguments in function calls when those inputs are model settings or workflow parameters that should be controlled by the caller. Prefer named fields in a parameter struct or explicit variables defined near the top-level script for clarity.
-

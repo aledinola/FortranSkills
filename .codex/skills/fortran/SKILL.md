@@ -135,13 +135,13 @@ On this machine, invoking `ifx.exe` directly is not sufficient for compilation i
 For a debug-oriented build, prefer flags in this spirit unless the project already defines its own set:
 
 ```powershell
-cmd /c '"C:\Program Files (x86)\Intel\oneAPI\setvars.bat" >nul 2>&1 && "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin\ifx.exe" /warn:all /stand:f18 /check:all /traceback /debug:full /Od "source.f90" /exe:"program.exe"'
+cmd /c '"C:\Program Files (x86)\Intel\oneAPI\setvars.bat" >nul 2>&1 && ifx /warn:all /stand:f18 /check:all /traceback /debug:full /Od "source.f90" /exe:"program.exe"'
 ```
 
 For release-oriented builds, start from the project defaults. If none exist, a conservative starting point is:
 
 ```powershell
-cmd /c '"C:\Program Files (x86)\Intel\oneAPI\setvars.bat" >nul 2>&1 && "C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin\ifx.exe" /warn:all /stand:f18 /O2 "source.f90" /exe:"program.exe"'
+cmd /c '"C:\Program Files (x86)\Intel\oneAPI\setvars.bat" >nul 2>&1 && ifx /warn:all /stand:f18 /O2 "source.f90" /exe:"program.exe"'
 ```
 
 After edits:
@@ -161,4 +161,3 @@ Read only what you need:
 - Use [references/fortran-matlab-io.md](references/fortran-matlab-io.md) for writing Fortran outputs that MATLAB will read later.
 
 If the user asks for exact compiler behavior or option semantics, prefer the official Intel documentation linked in [references/intel-ifx.md](references/intel-ifx.md) over memory.
-

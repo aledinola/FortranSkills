@@ -5,6 +5,27 @@ description: Use only for MATLAB code involving GPU-specific constructs or GPU e
 
 # MATLAB GPU Skill
 
+Use `matlab` from `PATH` by default unless the user explicitly asks for another installed version. Do not hard-code a MATLAB release when the task only requires the default environment. If the user explicitly asks for a specific installed release, discover it first and call that release by full path.
+
+## Running MATLAB from Codex
+- Default to PowerShell with `matlab -batch "<command>"` from the relevant project folder.
+- Do not spend time rediscovering MATLAB unless `matlab -batch` fails. Use the MATLAB executable on `PATH` as the default environment.
+- For a quick availability check, run `matlab -batch "disp(1)"`.
+- For scripts, prefer `matlab -batch "cd('<project folder>'); script_or_function"` rather than launching the desktop or changing directories with separate shell steps.
+- On Windows, prefer forward slashes inside MATLAB paths when composing `-batch` commands, for example `cd('C:/path/project')`, to reduce quoting and escaping problems.
+- If a script depends on helpers in subfolders, use `addpath(genpath(pwd))` after `cd(...)`, for example `matlab -batch "cd('C:/path/project'); addpath(genpath(pwd)); run_all_checks"`.
+- Call MATLAB scripts/functions by base name without `.m` in ordinary command form. Use `run_all_checks`, not `run_all_checks.m`; use `run('run_all_checks.m')` only when explicitly using MATLAB's `run` function.
+- For multiple checks, create or run one driver script and call MATLAB once, rather than starting MATLAB repeatedly with separate `-batch` commands.
+- Set a realistic command timeout for the expected workload; short smoke tests can use about 30 seconds, while real estimation/test runs may need minutes or a deliberate cap.
+- If a MATLAB command fails because of sandboxing or permissions, rerun the same command with escalated permissions instead of trying unrelated launch methods.
+- Use a full MATLAB path only when the user explicitly asks for a specific installed release or PATH-based launch fails for a real reason.
+
+## Skill Stability
+- Treat this MATLAB execution protocol as stable. Do not opportunistically edit this skill during ordinary MATLAB work.
+- Revisit these instructions only if the user explicitly asks, MATLAB's PATH/default release changes, Codex sandbox behavior changes, or a MATLAB run fails for a reason not covered here.
+- If the protocol still works, follow it instead of re-checking or expanding the skill. A quick `matlab -batch "disp(1)"` smoke test is enough when availability must be confirmed.
+- In normal project work, spend time on the user's MATLAB code and tests, not on maintaining this skill.
+
 ## When to use
 Use this skill when the user asks for MATLAB code or advice involving:
 - `gpuArray`

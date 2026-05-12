@@ -1,4 +1,4 @@
-﻿interface:
-  display_name: "PDF Reading"
-  short_description: "Read PDFs with Poppler, ripgrep, and Python PDF tools"
-  default_prompt: "Use $pdf-reading-efficiently to inspect PDFs efficiently with pdftotext, pdfinfo, pdftoppm, rg, PyMuPDF, pdfplumber, and pypdf."
+interface:
+  display_name: "PDF Reading Efficiently"
+  short_description: "Read, inspect, repair, render, and OCR PDFs efficiently."
+  default_prompt: "Use $pdf-reading-efficiently to inspect PDFs with Poppler, Python PDF libraries, qpdf, and last-resort Tesseract OCR."

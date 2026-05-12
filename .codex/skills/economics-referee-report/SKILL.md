@@ -156,7 +156,8 @@ Use an academic referee tone that matches the user's writing style. Keep the pro
 - Calibrate the number of major comments to the recommendation.
 - For `Revise and resubmit`, include more major comments when needed, with the upper bound increasing to `10` for especially complex papers.
 - For `Accept with minor revision` or `Rejection`, use fewer major comments and focus only on the most important points.
-- Keep each major comment heading short, usually a few words rather than a full sentence.`r`n- Minor comments do not require headings.
+- Keep each major comment heading short, usually a few words rather than a full sentence.
+- Minor comments do not require headings.
 - Make every major comment actionable: each one must include at least one concrete suggestion for how the authors could address it.
 - When it helps make the point clearer, a major comment may include an equation, table, or figure drawn from the paper being refereed or from the relevant literature.
 - A major comment may contain multiple parts or subpoints. Some parts can be more important than others, but the structure should make the ranking of importance clear.
