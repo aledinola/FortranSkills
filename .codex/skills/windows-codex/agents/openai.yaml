@@ -1,0 +1,4 @@
+interface:
+  display_name: "Windows Codex"
+  short_description: "Handle Windows shell, PATH, sandbox, and GitHub CLI quirks."
+  default_prompt: "Use $windows-codex for Windows-specific Codex command-line work, PATH refreshes, Program Files paths, sandbox approvals, and Git/GitHub CLI setup."
